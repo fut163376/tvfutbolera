@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Futbolera</title>
+    <title>TV Deportiva - Fire TV</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
@@ -23,17 +23,19 @@
         header {
             text-align: center;
             margin-bottom: 40px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 15px;
             border-bottom: 3px solid #ff9900;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
         
         h1 {
-            font-size: 2.8rem;
+            font-size: 3rem;
             color: #ff9900;
             text-shadow: 2px 2px 8px rgba(255, 153, 0, 0.5);
             letter-spacing: 1px;
+            margin-bottom: 10px;
         }
         
         .container {
@@ -131,13 +133,6 @@
             justify-content: center;
         }
         
-        .cargando {
-            color: #ff9900;
-            font-size: 1.2rem;
-            text-align: center;
-            padding: 20px;
-        }
-        
         .error-imagen {
             width: 100%;
             height: 100%;
@@ -158,7 +153,7 @@
             color: #ff9900;
         }
         
-        /* Contenedor del iframe */
+        /* Contenedor del reproductor */
         #contenedor-canal {
             display: none;
             position: fixed;
@@ -176,35 +171,6 @@
             border: none;
         }
         
-        #volver-menu {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #ff9900;
-            color: #000;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 101;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            display: none;
-        }
-        
-        .instrucciones {
-            text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            background: rgba(42, 42, 42, 0.7);
-            border-radius: 12px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            border: 1px solid #444;
-        }
-        
         footer {
             text-align: center;
             margin-top: 50px;
@@ -220,6 +186,16 @@
         }
         
         /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
         @media (max-width: 900px) {
             .container {
                 grid-template-columns: repeat(2, 1fr);
@@ -252,35 +228,20 @@
             .imagen-boton {
                 height: 160px;
             }
-            
-            #volver-menu {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-                bottom: 15px;
-                right: 15px;
-            }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>TV Futbolera</h1>
+        <h1>TV Deportiva</h1>
     </header>
     
     <div class="container" id="contenedor-botones">
-        <div class="cargando">Cargando canales...</div>
+        <!-- Los botones se generarán con JavaScript -->
     </div>
     
     <div id="contenedor-canal">
         <iframe id="iframe-canal" src="about:blank"></iframe>
-    </div>
-    
-    <button id="volver-menu" title="Volver al menú">←</button>
-    
-    <div class="instrucciones">
-        <p>Usa las flechas de dirección para navegar entre los botones. Presiona OK o Enter para seleccionar.</p>
-        <p>Presiona el botón Atrás (Esc) para volver al menú principal cuando estés viendo un canal.</p>
     </div>
     
     <footer>
@@ -324,14 +285,26 @@
 
         // Variables para la navegación
         let botonSeleccionado = 0;
-        const columnas = 3;
+        let columnas = 3; // Valor inicial, se actualizará dinámicamente
         let modoCanalActivo = false;
 
         // Elementos DOM
         const contenedorBotones = document.getElementById('contenedor-botones');
         const contenedorCanal = document.getElementById('contenedor-canal');
         const iframeCanal = document.getElementById('iframe-canal');
-        const botonVolver = document.getElementById('volver-menu');
+
+        // Función para calcular el número de columnas según el ancho de pantalla
+        function calcularColumnas() {
+            const anchoPantalla = window.innerWidth;
+            
+            if (anchoPantalla >= 1200) {
+                return 3;
+            } else if (anchoPantalla >= 900) {
+                return 2;
+            } else {
+                return 1;
+            }
+        }
 
         // Función para cargar imágenes con manejo de errores
         function cargarImagen(url, nombre) {
@@ -361,6 +334,7 @@
                 elementoBoton.tabIndex = 0;
                 elementoBoton.setAttribute('role', 'button');
                 elementoBoton.setAttribute('aria-label', boton.nombre);
+                elementoBoton.setAttribute('data-indice', i);
                 
                 // Contenido HTML del botón
                 elementoBoton.innerHTML = `
@@ -387,6 +361,9 @@
                 contenedorBotones.appendChild(elementoBoton);
             }
             
+            // Actualizar número de columnas
+            columnas = calcularColumnas();
+            
             // Inicializar la navegación
             actualizarSeleccion();
         }
@@ -397,15 +374,49 @@
             contenedorCanal.style.display = 'block';
             contenedorBotones.style.display = 'none';
             document.querySelector('header').style.display = 'none';
-            document.querySelector('.instrucciones').style.display = 'none';
             document.querySelector('footer').style.display = 'none';
-            botonVolver.style.display = 'block';
             modoCanalActivo = true;
+            
+            // Intentar entrar en modo pantalla completa
+            entrarPantallaCompleta();
+            
+            // Cambiar el título para indicar que estamos en un canal
+            document.title = "Reproduciendo canal - TV Deportiva";
             
             // Enfocar el iframe para que pueda recibir eventos de teclado
             setTimeout(() => {
                 iframeCanal.focus();
             }, 100);
+        }
+
+        // Función para entrar en modo pantalla completa
+        function entrarPantallaCompleta() {
+            const elem = document.documentElement;
+            
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.log(`Error al intentar pantalla completa: ${err.message}`);
+                });
+            } else if (elem.mozRequestFullScreen) { /* Firefox */
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE/Edge */
+                elem.msRequestFullscreen();
+            }
+        }
+
+        // Función para salir del modo pantalla completa
+        function salirPantallaCompleta() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE/Edge */
+                document.msExitFullscreen();
+            }
         }
 
         // Función para volver al menú
@@ -414,17 +425,18 @@
             contenedorCanal.style.display = 'none';
             contenedorBotones.style.display = 'grid';
             document.querySelector('header').style.display = 'block';
-            document.querySelector('.instrucciones').style.display = 'block';
             document.querySelector('footer').style.display = 'block';
-            botonVolver.style.display = 'none';
             modoCanalActivo = false;
+            
+            // Restaurar el título original
+            document.title = "TV Deportiva - Fire TV";
+            
+            // Salir del modo pantalla completa
+            salirPantallaCompleta();
             
             // Reenfocar el menú
             actualizarSeleccion();
         }
-
-        // Evento para el botón de volver
-        botonVolver.addEventListener('click', volverAlMenu);
 
         // Función para manejar la navegación con teclado
         function manejarNavegacion(event) {
@@ -432,10 +444,15 @@
             if (modoCanalActivo) {
                 if (event.key === 'Escape') {
                     event.preventDefault();
+                    event.stopPropagation();
                     volverAlMenu();
+                    return false;
                 }
                 return;
             }
+            
+            // Actualizar número de columnas (por si cambió el tamaño de pantalla)
+            columnas = calcularColumnas();
             
             // Navegación en el menú principal
             const teclas = {
@@ -494,7 +511,33 @@
         // Inicializar la aplicación cuando se cargue el DOM
         document.addEventListener('DOMContentLoaded', () => {
             generarBotones();
+            
+            // Listener principal para teclado
             document.addEventListener('keydown', manejarNavegacion);
+            
+            // Listener adicional para capturar el evento Escape en modos especiales
+            window.addEventListener('keydown', function(e) {
+                if (modoCanalActivo && e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    volverAlMenu();
+                    return false;
+                }
+            }, true);
+            
+            // También capturamos el evento de cambio de pantalla completa
+            document.addEventListener('fullscreenchange', function() {
+                if (!document.fullscreenElement && modoCanalActivo) {
+                    // Si salimos de pantalla completa pero seguimos en modo canal,
+                    // volvemos al menú
+                    volverAlMenu();
+                }
+            });
+            
+            // Actualizar columnas cuando cambia el tamaño de la ventana
+            window.addEventListener('resize', function() {
+                columnas = calcularColumnas();
+            });
         });
     </script>
 </body>
