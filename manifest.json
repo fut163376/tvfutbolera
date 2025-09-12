@@ -2,7 +2,7 @@
   "name": "TV Deportiva",
   "short_name": "TV Deportiva",
   "description": "Aplicación para ver canales deportivos en Fire TV",
-  "start_url": "https://fut163376.github.io/tvfutbolera/tv.html",
+  "start_url": "/tv.html",
   "display": "fullscreen",
   "background_color": "#1a1a1a",
   "theme_color": "#ff9900",
@@ -21,3 +21,4 @@
   ]
 
 }
+
