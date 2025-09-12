@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ff9900">
     <title>TV Deportiva - Fire TV</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/fut163376/tvfutbolera/refs/heads/main/tv-logo-free-vector.png">
     <style>
         * {
             margin: 0;
@@ -40,9 +43,9 @@
         
         .container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
         }
         
@@ -229,6 +232,23 @@
                 height: 160px;
             }
         }
+
+        /* Notificación de instalación */
+        #installButton {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #ff9900;
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -243,6 +263,8 @@
     <div id="contenedor-canal">
         <iframe id="iframe-canal" src="about:blank"></iframe>
     </div>
+    
+    <button id="installButton">Instalar App</button>
     
     <footer>
         <p>Disfruta del contenido</p>
@@ -287,11 +309,46 @@
         let botonSeleccionado = 0;
         let columnas = 3; // Valor inicial, se actualizará dinámicamente
         let modoCanalActivo = false;
+        let deferredPrompt;
 
         // Elementos DOM
         const contenedorBotones = document.getElementById('contenedor-botones');
         const contenedorCanal = document.getElementById('contenedor-canal');
         const iframeCanal = document.getElementById('iframe-canal');
+        const installButton = document.getElementById('installButton');
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                .then((registration) => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+
+        // Before Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'block';
+            
+            installButton.addEventListener('click', () => {
+                installButton.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
 
         // Función para calcular el número de columnas según el ancho de pantalla
         function calcularColumnas() {
@@ -375,6 +432,7 @@
             contenedorBotones.style.display = 'none';
             document.querySelector('header').style.display = 'none';
             document.querySelector('footer').style.display = 'none';
+            installButton.style.display = 'none';
             modoCanalActivo = true;
             
             // Intentar entrar en modo pantalla completa
@@ -426,6 +484,12 @@
             contenedorBotones.style.display = 'grid';
             document.querySelector('header').style.display = 'block';
             document.querySelector('footer').style.display = 'block';
+            
+            // Mostrar botón de instalación si está disponible
+            if (deferredPrompt) {
+                installButton.style.display = 'block';
+            }
+            
             modoCanalActivo = false;
             
             // Restaurar el título original
@@ -517,7 +581,7 @@
             
             // Listener adicional para capturar el evento Escape en modos especiales
             window.addEventListener('keydown', function(e) {
-                if (modoCanalActivo && e.key === 'Escape') {
+                if (modoCalanActivo && e.key === 'Escape') {
                     e.preventDefault();
                     e.stopPropagation();
                     volverAlMenu();
