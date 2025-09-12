@@ -1,0 +1,22 @@
+{
+  "name": "TV Deportiva",
+  "short_name": "TV Deportiva",
+  "description": "Aplicación para ver canales deportivos en Fire TV",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#1a1a1a",
+  "theme_color": "#ff9900",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/fut163376/tvfutbolera/refs/heads/main/tv-logo-free-vector.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/fut163376/tvfutbolera/refs/heads/main/tv-logo-free-vector.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
