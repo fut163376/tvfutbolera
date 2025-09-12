@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Futbolera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            color: #fff;
+            padding: 20px;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            border-bottom: 3px solid #ff9900;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #ff9900;
+            text-shadow: 2px 2px 8px rgba(255, 153, 0, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        
+        .boton {
+            background: linear-gradient(145deg, #2a2a2a, #222);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #333;
+            box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.4),
+                        -4px -4px 12px rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .boton::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,153,0,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .boton:hover, .boton:focus {
+            transform: translateY(-8px);
+            border-color: #ff9900;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+        
+        .boton:hover::before {
+            opacity: 1;
+        }
+        
+        .boton:active {
+            transform: translateY(0);
+        }
+        
+        .boton.seleccionado {
+            transform: scale(1.06);
+            border-color: #ff9900;
+            box-shadow: 0 0 25px rgba(255, 153, 0, 0.8);
+        }
+        
+        .boton.seleccionado::before {
+            opacity: 1;
+        }
+        
+        .imagen-boton {
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #444;
+        }
+        
+        .imagen-boton img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+        
+        .boton:hover .imagen-boton img {
+            transform: scale(1.05);
+        }
+        
+        .nombre-boton {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cargando {
+            color: #ff9900;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-imagen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #444;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .error-imagen .icono {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ff9900;
+        }
+        
+        /* Contenedor del iframe */
+        #contenedor-canal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            background: #000;
+        }
+        
+        #iframe-canal {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        #volver-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff9900;
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 101;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        .instrucciones {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(42, 42, 42, 0.7);
+            border-radius: 12px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #444;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 25px;
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        /* Efecto de enfoque para navegación con teclado */
+        .boton:focus {
+            outline: 3px solid #ff9900;
+            outline-offset: 3px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            h1 {
+                font-size: 2.3rem;
+            }
+            
+            .nombre-boton {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .boton {
+                padding: 20px;
+            }
+            
+            .imagen-boton {
+                height: 160px;
+            }
+            
+            #volver-menu {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+                bottom: 15px;
+                right: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TV Futbolera</h1>
+    </header>
+    
+    <div class="container" id="contenedor-botones">
+        <div class="cargando">Cargando canales...</div>
+    </div>
+    
+    <div id="contenedor-canal">
+        <iframe id="iframe-canal" src="about:blank"></iframe>
+    </div>
+    
+    <button id="volver-menu" title="Volver al menú">←</button>
+    
+    <div class="instrucciones">
+        <p>Usa las flechas de dirección para navegar entre los botones. Presiona OK o Enter para seleccionar.</p>
+        <p>Presiona el botón Atrás (Esc) para volver al menú principal cuando estés viendo un canal.</p>
+    </div>
+    
+    <footer>
+        <p>Disfruta del contenido</p>
+    </footer>
+
+    <script>
+        // Datos de los botones (imagen, nombre y URL)
+        const botonesData = [
+            {
+                nombre: "MOVISTAR LA LIGA FHD",
+                imagen: "https://i.ibb.co/yfV1Q8n/liga.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/movistarlaliga.html"
+            },
+            {
+                nombre: "DAZN LA LIGA FHD",
+                imagen: "https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/spain/dazn-laliga-es.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/daznlaliga.html"
+            },
+            {
+                nombre: "MOVISTAR LIGA DE CAMPEONES FHD",
+                imagen: "https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/M%2B%20Liga%20de%20Campeones.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/movistarligadecampeones.html"
+            },
+            {
+                nombre: "DAZN F1 FHD",
+                imagen: "https://i.ibb.co/2Ndmtbp/f1.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/daznf1.html"
+            },
+            {
+                nombre: "BEIN SPORTS XTRA FHD",
+                imagen: "https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/beIN%20SPORTS%201.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/beinsportsxtra.html"
+            },
+            {
+                nombre: "TNT SPORTS FHD",
+                imagen: "https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/TNT%20Sports%201.png",
+                url: "https://embed.ksdjugfsddeports.com/embed2/tntsports.html"
+            }
+        ];
+
+        // Variables para la navegación
+        let botonSeleccionado = 0;
+        const columnas = 3;
+        let modoCanalActivo = false;
+
+        // Elementos DOM
+        const contenedorBotones = document.getElementById('contenedor-botones');
+        const contenedorCanal = document.getElementById('contenedor-canal');
+        const iframeCanal = document.getElementById('iframe-canal');
+        const botonVolver = document.getElementById('volver-menu');
+
+        // Función para cargar imágenes con manejo de errores
+        function cargarImagen(url, nombre) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(url);
+                img.onerror = () => {
+                    console.error(`Error cargando imagen: ${url}`);
+                    resolve(null);
+                };
+                img.src = url;
+            });
+        }
+
+        // Función para generar los botones
+        async function generarBotones() {
+            contenedorBotones.innerHTML = ''; // Eliminar mensaje de carga
+            
+            for (let i = 0; i < botonesData.length; i++) {
+                const boton = botonesData[i];
+                
+                // Intentar cargar la imagen
+                const imagenCargada = await cargarImagen(boton.imagen, boton.nombre);
+                
+                const elementoBoton = document.createElement('div');
+                elementoBoton.className = 'boton';
+                elementoBoton.tabIndex = 0;
+                elementoBoton.setAttribute('role', 'button');
+                elementoBoton.setAttribute('aria-label', boton.nombre);
+                
+                // Contenido HTML del botón
+                elementoBoton.innerHTML = `
+                    <div class="imagen-boton">
+                        ${imagenCargada ? 
+                            `<img src="${boton.imagen}" alt="${boton.nombre}" onerror="this.parentNode.innerHTML='<div class=\'error-imagen\'><div class=\'icono\'>📺</div>${boton.nombre}</div>'">` : 
+                            `<div class="error-imagen"><div class="icono">📺</div>${boton.nombre}</div>`
+                        }
+                    </div>
+                    <div class="nombre-boton">${boton.nombre}</div>
+                `;
+                
+                // Eventos para clic y teclado
+                elementoBoton.addEventListener('click', () => {
+                    abrirCanal(boton.url);
+                });
+                
+                elementoBoton.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        abrirCanal(boton.url);
+                    }
+                });
+                
+                contenedorBotones.appendChild(elementoBoton);
+            }
+            
+            // Inicializar la navegación
+            actualizarSeleccion();
+        }
+
+        // Función para abrir un canal
+        function abrirCanal(url) {
+            iframeCanal.src = url;
+            contenedorCanal.style.display = 'block';
+            contenedorBotones.style.display = 'none';
+            document.querySelector('header').style.display = 'none';
+            document.querySelector('.instrucciones').style.display = 'none';
+            document.querySelector('footer').style.display = 'none';
+            botonVolver.style.display = 'block';
+            modoCanalActivo = true;
+            
+            // Enfocar el iframe para que pueda recibir eventos de teclado
+            setTimeout(() => {
+                iframeCanal.focus();
+            }, 100);
+        }
+
+        // Función para volver al menú
+        function volverAlMenu() {
+            iframeCanal.src = 'about:blank';
+            contenedorCanal.style.display = 'none';
+            contenedorBotones.style.display = 'grid';
+            document.querySelector('header').style.display = 'block';
+            document.querySelector('.instrucciones').style.display = 'block';
+            document.querySelector('footer').style.display = 'block';
+            botonVolver.style.display = 'none';
+            modoCanalActivo = false;
+            
+            // Reenfocar el menú
+            actualizarSeleccion();
+        }
+
+        // Evento para el botón de volver
+        botonVolver.addEventListener('click', volverAlMenu);
+
+        // Función para manejar la navegación con teclado
+        function manejarNavegacion(event) {
+            // Si estamos en modo canal, solo manejar la tecla Escape
+            if (modoCanalActivo) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    volverAlMenu();
+                }
+                return;
+            }
+            
+            // Navegación en el menú principal
+            const teclas = {
+                ArrowUp: () => {
+                    if (botonSeleccionado >= columnas) {
+                        botonSeleccionado -= columnas;
+                        actualizarSeleccion();
+                    }
+                },
+                ArrowDown: () => {
+                    if (botonSeleccionado < botonesData.length - columnas) {
+                        botonSeleccionado += columnas;
+                        actualizarSeleccion();
+                    }
+                },
+                ArrowLeft: () => {
+                    if (botonSeleccionado % columnas !== 0) {
+                        botonSeleccionado--;
+                        actualizarSeleccion();
+                    }
+                },
+                ArrowRight: () => {
+                    if (botonSeleccionado % columnas !== columnas - 1 && botonSeleccionado < botonesData.length - 1) {
+                        botonSeleccionado++;
+                        actualizarSeleccion();
+                    }
+                },
+                Enter: () => {
+                    const boton = botonesData[botonSeleccionado];
+                    abrirCanal(boton.url);
+                },
+                Escape: () => {
+                    // No hacer nada en el menú principal
+                }
+            };
+
+            if (teclas[event.key]) {
+                event.preventDefault();
+                teclas[event.key]();
+            }
+        }
+
+        // Función para actualizar la selección visual
+        function actualizarSeleccion() {
+            const botones = document.querySelectorAll('.boton');
+            botones.forEach((boton, index) => {
+                if (index === botonSeleccionado) {
+                    boton.classList.add('seleccionado');
+                    boton.focus();
+                } else {
+                    boton.classList.remove('seleccionado');
+                }
+            });
+        }
+
+        // Inicializar la aplicación cuando se cargue el DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            generarBotones();
+            document.addEventListener('keydown', manejarNavegacion);
+        });
+    </script>
+</body>
+</html>
